@@ -257,6 +257,13 @@ jobs:
           - TestSSHIsBlockedInACL
           - TestSSHUserOnlyIsolation
           - TestSSHAutogroupSelf
+          - TestSSHOneUserToOneCheckModeCLI
+          - TestSSHOneUserToOneCheckModeOIDC
+          - TestSSHCheckModeUnapprovedTimeout
+          - TestSSHCheckModeCheckPeriodCLI
+          - TestSSHCheckModeAutoApprove
+          - TestSSHCheckModeNegativeCLI
+          - TestSSHLocalpart
           - TestTagsAuthKeyWithTagRequestDifferentTag
           - TestTagsAuthKeyWithTagNoAdvertiseFlag
           - TestTagsAuthKeyWithTagCannotAddViaCLI
