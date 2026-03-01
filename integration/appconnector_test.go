@@ -353,6 +353,7 @@ func TestAppConnectorWildcardConnector(t *testing.T) {
 
 			// Verify the domain
 			var cfg policyv2.AppConnectorAttr
+
 			err := json.Unmarshal([]byte(attrs.At(0)), &cfg)
 			assert.NoError(c, err)
 			assert.Contains(c, cfg.Domains, "*.internal.example.com")
