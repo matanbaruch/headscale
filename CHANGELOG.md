@@ -44,6 +44,7 @@ keys remain all-access.
 
 - Expiring or deleting a non-existent pre-auth key now returns an error instead of silently succeeding [#3324](https://github.com/juanfont/headscale/pull/3324)
 - Improve systemd service file hardening [#3341](https://github.com/juanfont/headscale/pull/3341)
+- `nodeAttrs` accepts an `app` field for valued capabilities, delivering [App Connector](./docs/ref/policy.md#app-connectors) configuration via `tailscale.com/app-connectors` [#3121](https://github.com/juanfont/headscale/pull/3121)
 
 ## 0.29.2 (2026-07-01)
 
