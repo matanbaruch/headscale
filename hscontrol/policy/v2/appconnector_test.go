@@ -14,13 +14,6 @@ import (
 	"tailscale.com/types/appctype"
 )
 
-// appConnectorsCap is the Tailscale capability key under which app connector
-// configuration is delivered to a node via the nodeAttrs "app" field. App
-// connectors are not a bespoke Headscale policy block: they ride the generic
-// valued-capability path, exactly as a Tailscale-hosted control plane delivers
-// them.
-const appConnectorsCap = nodecap.Cap("tailscale.com/app-connectors")
-
 // decodeAppConnectorAttrs decodes the app-connectors payloads on a node's
 // CapMap into the real Tailscale [appctype.AppConnectorAttr]. Decoding through
 // the upstream type (rather than a Headscale duplicate) asserts that the
@@ -190,4 +183,55 @@ func TestAppConnectorChangeTracking(t *testing.T) {
 
 	assert.Empty(t, pm.NodesWithChangedCapMap(),
 		"NodesWithChangedCapMap drains on read")
+}
+
+func TestValidateNodeCapabilityName(t *testing.T) {
+	t.Parallel()
+
+	tests := []struct {
+		name    string
+		cap     nodecap.Cap
+		wantErr error
+	}{
+		{name: "app connectors allowed", cap: appConnectorsCap, wantErr: nil},
+		{name: "custom domain allowed", cap: "example.com/app/foo", wantErr: nil},
+		{name: "non-allowlisted tailscale cap rejected", cap: "tailscale.com/app-nope", wantErr: ErrNodeAttrAppCapUnsupported},
+		{name: "url scheme rejected", cap: "https://tailscale.com/app-connectors", wantErr: ErrCapNameInvalidForm},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			t.Parallel()
+
+			err := validateNodeCapabilityName(tt.cap)
+			if tt.wantErr == nil {
+				require.NoError(t, err)
+			} else {
+				require.ErrorIs(t, err, tt.wantErr)
+			}
+		})
+	}
+}
+
+// TestAppConnectorUnsupportedCapRejected proves the allowlist is enforced at
+// policy load, not just by the helper: an unsupported tailscale.com capability
+// keeps the whole policy from loading, so no node ever receives a payload
+// headscale cannot back.
+func TestAppConnectorUnsupportedCapRejected(t *testing.T) {
+	t.Parallel()
+
+	users := nodeAttrsTestUsers()
+	nodes := nodeAttrsTestNodes(users)
+
+	policy := `{
+		"tagOwners": {` + nodeAttrsTagOwners + `},
+		"nodeAttrs": [{
+			"target": ["tag:server"],
+			"app": {
+				"tailscale.com/cap/funnel": [{"name": "nope"}]
+			}
+		}]
+	}`
+
+	_, err := NewPolicyManager([]byte(policy), users, nodes.ViewSlice())
+	require.ErrorIs(t, err, ErrNodeAttrAppCapUnsupported)
 }

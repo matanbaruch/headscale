@@ -231,6 +231,10 @@ field for *valued* capabilities — a capability name mapped to a list of JSON p
 Headscale passes these payloads through unmodified. [App Connectors](#app-connectors) are delivered this way via the
 `tailscale.com/app-connectors` capability.
 
+Capability names in the `tailscale.com` domain are only accepted when Headscale implements what the capability promises;
+`tailscale.com/app-connectors` is currently the only one. Names in your own domain, such as `example.com/app/my-cap`,
+always pass through.
+
 ## Network-wide policy options
 
 The following options are applied for the entire tailnet. Consider [node attributes](#node-attributes) for a more
